@@ -8,54 +8,39 @@ from openpyxl import load_workbook
 import pandas as pd
 from tt_show_class_jan20 import TimeTable
 
-def dic1_fun(key_col,val_col):
-    keys = df1[key_col]
-    values = df1[val_col]
-    return(dict(zip(keys,values)))
-def dic2_fun(key_col,val_col):
-    keys = df2[key_col]
-    values = df2[val_col]
-    return(dict(zip(keys,values)))
-def dic3_fun(key_col,val_col):
-    keys = df3[key_col]
-    values = df3[val_col]
-    return(dict(zip(keys,values)))
 def find_key(dictionary,value):
     for key,val in dictionary.items():
         if val == value:
             return(key)
     return None
-# Reading excel file
-def excel_read(file_name,sheet_name):
-    data_df = []
+def excel_read1(file_name,sheet_name):
+    data_dfrow = []
+    lst_dfcol = []
     workbook = load_workbook(filename=f"{file_name}.xlsx")
     sheet = workbook[sheet_name]
     headers = [cell.value for cell in sheet[1]]
     for row in sheet.iter_rows(min_row=2, values_only=True):
         rowdf_dict = dict(zip(headers, row))
-        data_df.append(rowdf_dict)
+        data_dfrow.append(rowdf_dict)
+    for column in sheet.iter_cols(min_row=2, values_only=True):
+        df_col = []
+        for cell in column:
+            df_col.append(cell)
+        lst_dfcol.append(df_col)
+        coldf_dict = dict(zip(headers, lst_dfcol))
     workbook.close()
-    #row_df_ret = [data_df,headers]
-    return data_df
-
+    row_df_ret = [data_dfrow,coldf_dict,headers]
+    return row_df_ret
 def parent_dept_selection(event): 
-    global df2,emp_dict,nick_name_dict
-    df2 = pd.read_excel("faculty_data.xlsx",sheet_name=dept_code.get())
-    df2["ID2"] = df2.index
-    emp_code.set('')
-    emp_dict = dic2_fun("ID2","emp_code")
-    dept_dict = dic2_fun("ID2","dept")
-    nick_name_dict = dic2_fun("ID2","nick_name")
-    position_dict = dic2_fun("ID2","position")
-    emp_list = list(emp_dict.values())
-    emp_code.config(values=emp_list)
+    global data_faculty
+    data_faculty = excel_read1("faculty_data",dept_code.get())
+    emp_code.config(values=data_faculty[1]["emp_code"])
 def emp_code_selection(event):
     assign_dept_code.set('')
     assign_dept_code.config(values=("CE","ME","EE"))
 def dept_option_selection(event):
     odd_even_code.config(values=("ODD","EVEN"))
 def odd_even_selection(event):
-    global odd_even
     odd_even = odd_even_code.get()
     if odd_even == 'ODD':
         odd_even_list = ['s1','s3','s5','s7']
@@ -66,96 +51,56 @@ def odd_even_selection(event):
     semester_code.set('')
     semester_code.config(values=odd_even_list)
 def semester_option_selection(event):
-    global df1,odd_even
-    data_tt["class_semester"] = semester_code.get()
     ltp_code.set('')
     ltp_code.config(values=("Lecture","Tutorial","Practical","Projects"))
 def ltp_option_selection(event):
-    global class_x,df1,df3
-    global weekday_dict,slot1_dict,slot2_dict,slot3_dict,slot4_dict
-    global slot5_dict,slot6_dict
-    df1 = pd.read_excel(f"curiculam_{data_tt['class_dept']}.xlsx",sheet_name=data_tt["class_semester"])
-    df1["ID1"] = df1.index
-    
-    global code_dict,select_dict,class_count_dict
-    global lec_dict,tut_dict,lab_dict,proj_dict
-    global class_x,code_ref_lst,lec_ref_lst
-    code_dict = dic1_fun("ID1","Code")
-    select_dict = dic1_fun("ID1","Select")
-    class_count_dict = dic1_fun("ID1","Number")
-
-    lec_dict = dic1_fun("ID1","L")
-    tut_dict = dic1_fun("ID1","T")
-    lab_dict = dic1_fun("ID1","P")
-    proj_dict = dic1_fun("ID1","R")
-    select_lst = []
-    for i in range(len(select_dict)):
-        if select_dict[i] != 0:
-            select_lst.append(select_dict[i])
-        else:
-            del code_dict[i]
-            del lec_dict[i]
-            del tut_dict[i]
-            del lab_dict[i]
-            del proj_dict[i]
-            del class_count_dict[i]
-    df3 = pd.read_excel(f"timeTable_{my_data_tt['my_class']}.xlsx",sheet_name=my_data_tt["my_sem"])
-    df3["ID3"] = df3.index
-    weekday_dict = dic3_fun("ID3","week_day")
-    slot1_dict = dic3_fun("ID3","slot_1")
-    slot2_dict = dic3_fun("ID3","slot_2")
-    slot3_dict = dic3_fun("ID3","slot_3")
-    slot4_dict = dic3_fun("ID3","slot_4")
-    slot5_dict = dic3_fun("ID3","slot_5")
-    slot6_dict = dic3_fun("ID3","slot_6")
-    code_lst = list(code_dict.values())
-    code_ref_lst = []
-    class_count_lst = list(class_count_dict.values())
-    class_count_ref_lst = []
+    data_curi = excel_read1(f"curiculam_{assign_dept_code.get()}",semester_code.get())
+    new_row_lst = [data_curi[0][i] for i in range(len(data_curi[1]["Select"])) if data_curi[1]["Select"][i] != 0]
+    data_col_lst = list(data_curi[1].values())  
+    cur_col_lst = [[data_col_lst[j][i] for i in range(len(data_curi[1]["Select"])) if data_curi[1]["Select"][i] != 0] for j in range(len(data_curi[2]))]
+    cur_col_dict = dict(zip(data_curi[2], cur_col_lst))
+    data_tt = excel_read1(f"timeTable_{assign_dept_code.get()}",semester_code.get())
+    data_temp = excel_read1(f"faculty_assignment_{odd_even_code.get()}",assign_dept_code.get())
+    global data_faculty
     match ltp_code.get():
         case "Lecture":
-            lec_lst = list(lec_dict.values())           
-            lec_ref_lst = []
-            for i in range(len(lec_lst)):
-                if lec_lst[i] != 0:
-                    lec_ref_lst.append(lec_lst[i])
-                    code_ref_lst.append(code_lst[i])
+            cur_lec_lst = [(cur_col_dict["Code"])[i] for i in range(len(cur_col_dict["Code"])) if list(cur_col_dict["L"])[i] != 0]
+            cur_L_lst = [(cur_col_dict["L"])[i] for i in range(len(cur_col_dict["L"])) if list(cur_col_dict["L"])[i] != 0]
+            #print(cur_lec_lst)
+            #print(cur_L_lst)
         # avoid duplicate entry in Lecture
-            code_lst = []
-            x = len(lec_ref_lst)
-            for j in range(x):
-                L_count = lec_ref_lst[j]
-                L_consumed = check_tt_space(code_ref_lst[j])
-                if (L_count-L_consumed) > 0:
-                    code_lst.append(code_ref_lst[j])
-                       
-        #avoid other staff already committed lecture
-            data_assigned = excel_read(f"faculty_assignment_{odd_even_code.get()}",assign_dept_code.get())           
-            print(data_assigned)
-            data_faculty = excel_read("faculty_data",dept_code.get())
-            for i in range(len(data_assigned)):
-                print(data_assigned[i]["nick_name"])
-            """
+            new_lec_lst = [lec for lec in cur_lec_lst if cur_L_lst[cur_lec_lst.index(lec)] > len([i for j in range(1,len(data_tt[2])) for i in range(len(data_tt[1][data_tt[2][j]])) if data_tt[1][data_tt[2][j]][i] == lec])]
+            print(new_lec_lst)
+            #print(data_temp[1]["emp_code"].index(emp_code.get()))
+            faculty_sel = data_faculty[1]["nick_name"][data_faculty[1]["emp_code"].index(int(emp_code.get()))] #from faculty file
+            return
+
+
+            L_code = new_lec_lst[(data_curi[1]["L"].index(1))] #from curriculum file
+            L_code = data_temp[1]["L_code"][(data_temp[1]["nick_name"].index(faculty_sel))]
+            print(new_lec_lst.index(L_code))
+            L_hr = data_temp[1]["L_hr"][(data_temp[1]["nick_name"].index(faculty_sel))]
+            print(faculty_sel,L_code,L_hr)
+            
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            d = dict(zip(data_temp[1]["emp_code"],data_temp[1]["nick_name"]))
+            print(d[data_temp[1]["emp_code"].index(emp_code.get())])            
+            code_lst = new_lec_lst
             print(code_lst)
-            print(emp_code.get())
-            print(len(code_lst))
-            #@@@@@@@@@@@@@@@
-            """
-            new_code_lst = []
-            for i in range(len(code_lst)):
-                my_name = nick_name_dict[list(emp_dict.values()).index(int(emp_code.get()))]
-                if data_assigned[i]["nick_name"] == 0 or data_assigned[i]["nick_name"] == my_name:
-                    new_code_lst.append(code_lst[i])
-                    #print(data_assigned[i]["nick_name"],nick_name_dict[list(emp_dict.values()).index(int(emp_code.get()))])
-            code_lst = new_code_lst
-            print(code_lst)
-            #faculty_assigned_row = next(i for i, item in enumerate(data_faculty) if item["emp_code"] == int(emp_code.get()))   
         case "Tutorial":
-            tut_lst = list(tut_dict.values())
-            for i in range(len(tut_lst)):
-                if tut_lst[i] != 0:
-                    class_count_ref_lst.append(class_count_lst[i])
-                    code_ref_lst.append(code_lst[i])
+            cur_tut_lst = [(cur_col_dict["Code"])[i] for i in range(len(cur_col_dict["Code"])) if list(cur_col_dict["T"])[i] != 0]
+            cur_T_lst = [(cur_col_dict["T"])[i] for i in range(len(cur_col_dict["T"])) if list(cur_col_dict["T"])[i] != 0]
+            cur_num_lst = [(cur_col_dict["Number"])[i] for i in range(len(cur_col_dict["Number"])) if list(cur_col_dict["T"])[i] != 0]
+
+            new_tut_lst = [tut for tut in cur_tut_lst if cur_T_lst[cur_tut_lst.index(tut)] > len([i for j in range(1,len(data_tt[2])) for i in range(len(data_tt[1][data_tt[2][j]])) if data_tt[1][data_tt[2][j]][i] == tut])]
+            print(cur_tut_lst)
+            print(cur_T_lst)
+            print(cur_num_lst)
+            new_tut_lst = [tut for tut in cur_tut_lst if cur_T_lst[cur_tut_lst.index(tut)] > len([i for j in range(1,len(data_tt[2])) for i in range(len(data_tt[1][data_tt[2][j]])) if data_tt[1][data_tt[2][j]][i] == tut])]
+            print(new_tut_lst)
+            return
+
         # avoid duplicate entry in tutorial
             code_lst = []
             T_count = 0
@@ -204,7 +149,6 @@ def ltp_option_selection(event):
             print("Who")
     sub_code.set('')
     sub_code.config(values=code_lst)
-    print(code_lst)
 def check_tt_space(check_tt_list):
     global slot1_dict,slot2_dict,slot3_dict,slot4_dict
     global slot5_dict,slot6_dict    
@@ -369,15 +313,26 @@ def update_tt():
     workbook.save(filename=f"timeTable_{assign_dept_code.get()}.xlsx")
     workbook.close()
     #@@@@@@@@@@@@@@@
-    workbook = load_workbook(filename=f"faculty_assignment_{odd_even_code.get()}.xlsx")
-    sheet = workbook[assign_dept_code.get()]
     match ltp_code.get():
         case "Lecture":
-            for i in range(len(row_val)):
-                my_name = nick_name_dict[list(emp_dict.values()).index(int(emp_code.get()))]
-                sheet.cell(row=row_val[i]+2,column=col_val[i]+2,value=my_name)
-    workbook.save(filename=f"faculty_assignment_{odd_even_code.get()}.xlsx")
-    workbook.close()
+            wb = load_workbook(f"faculty_assignment_{odd_even_code.get()}.xlsx")
+            sheet = wb[assign_dept_code.get()]
+            headers = [cell.value for cell in sheet[1]]
+            print(headers)
+            nick_name_lst = []
+            code_select_lst = []
+            for i in range(len(sheet['A'])-1):
+                nick_name_lst.append(sheet.cell(row=i+2,column=1).value)
+                code_select_lst.append(sheet.cell(row=i+2,column=5).value)
+            print(nick_name_lst)
+            print(code_select_lst)
+            """
+            #data_faculty = excel_read("faculty_data",dept_code.get())
+            for i in range(len(sheet['A']))):
+                print(sheet.cell(row=i+1,column=1).value)
+                print
+                print(data_assigned[i]["nick_name"],nick_name_dict[list(emp_dict.values()).index(int(emp_code.get()))])
+            """
     #@@@@@@@@@@@@@@@
     text_box2.delete('1.0','end')
     text_box2.insert('1.0',f"Timetable updated for {assign_dept_code.get()} : {semester_code.get()} :  Lecture {sub_code.get()}")
@@ -432,20 +387,7 @@ def cancel_option(event):
         text_box1.insert('1.0',"All the data entry under 1)Assigned for Dept./Topic 2)semester 3)Class Type 4)Subject Code will be reset for fresh entry.")
 def confirm_cancel():
     pass
-    """
-    cancel_check.config(text="Clear Data Entry",fg="black")
-    cancel_button.config(text="Confirm CLEAR",bg="white",fg="black")
-    #enter_action.config(bg="white")
-    global clear_status
-    if clear_status == 0:
-        clear_lf1_2()
-    elif clear_status == 1:
-        clear_lf1_2()
-    elif clear_status == 2:
-        clear_day_slot()
-    else:
-        clear_ALL()
-    """
+
 root=Tk()
 root.title("Data entry by Faculty for TimeTable")
 w_width = root.winfo_screenwidth()
@@ -465,11 +407,6 @@ frame=Frame(root)
 frame.grid(row=0,column=0,padx=10,pady=5,sticky="nsew")
 x = "Lecture"
 global data_tt,my_data_tt,in_tt
-data_tt={"faculty_dept":'CE',"faculty_code":1234,"class_dept":'CE',
-    "class_semester":'S1',"class_type":'Lecture',"sub_code":'Maths'}
-my_data_tt={"my_name":"ROSA","my_class":"CE","my_sem":"s1","my_sub":"sub_ref",
-    "class_type":"Lecture","lect_count":1,"tut_count":1,"lab_count":1,
-    "proj_guide":3,"room_no":"101","my_week":"Monday","my_slot":"1"}
 in_tt={"week_day":" ","slot_1":[],"slot_2":[],"slot_3":[],
     "slot_4":[],"slot_5":[],"slot_6":[],"slot_x":[]}
 odd_even="odd"
