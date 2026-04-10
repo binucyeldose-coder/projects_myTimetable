@@ -207,6 +207,7 @@ def ltp_option_selection(event):
                             #print(df_sel_nomelec.iloc[[i]])
                             #print(df_sel_nomelec.at[df_sel_nomelec.index.tolist()[i],"L_code"].split(","))
                             my_code_temp = df_sel_nomelec.at[df_sel_nomelec.index.tolist()[i],"L_code"].split(",")
+                            """
                             if len(my_code_temp)==1:
                                 #print(my_code_temp[0])
                                 if my_code_temp[0] in code_lst_temp:
@@ -224,6 +225,15 @@ def ltp_option_selection(event):
                                         #print(dept_lst_me[j],sem_lst_me[j])
                                         if assign_dept_code.get() == dept_lst_me[j] and semester_code.get() == sem_lst_me[j]:
                                             code_lst_temp.remove(my_code_temp[j])  
+                            """               
+                            for j in range(len(my_code_temp)):
+                                #print(my_code_temp[j])
+                                if my_code_temp[j] in code_lst_temp:
+                                    dept_lst_me = df_sel_nomelec.at[df_sel_nomelec.index.tolist()[i],"deptL_class"].split(",")
+                                    sem_lst_me = df_sel_nomelec.at[df_sel_nomelec.index.tolist()[i],"semL"].split(",")
+                                    #print(dept_lst_me[j],sem_lst_me[j])
+                                    if assign_dept_code.get() == dept_lst_me[j] and semester_code.get() == sem_lst_me[j]:
+                                        code_lst_temp.remove(my_code_temp[j])                  
                     code_lst = code_lst_temp
                 else:
                     #print(len(df_sel_lec))
@@ -235,6 +245,7 @@ def ltp_option_selection(event):
                             #print(df_sel_lec.iloc[[i]])
                             #print(df_sel_lec.at[df_sel_lec.index.tolist()[i],"L_code"].split(","))
                             my_code_temp = df_sel_lec.at[df_sel_lec.index.tolist()[i],"L_code"].split(",")
+                            """
                             if len(my_code_temp)==1:
                                 #print(my_code_temp[0])
                                 if my_code_temp[0] in code_lst_temp:
@@ -252,6 +263,15 @@ def ltp_option_selection(event):
                                         #print(dept_lst_me[j],sem_lst_me[j])
                                         if assign_dept_code.get() == dept_lst_me[j] and semester_code.get() == sem_lst_me[j]:
                                             code_lst_temp.remove(my_code_temp[j])
+                            """   
+                            for j in range(len(my_code_temp)):
+                                #print(my_code_temp[j])
+                                if my_code_temp[j] in code_lst_temp:
+                                    dept_lst_me = df_sel_lec.at[df_sel_lec.index.tolist()[i],"deptL_class"].split(",")
+                                    sem_lst_me = df_sel_lec.at[df_sel_lec.index.tolist()[i],"semL"].split(",")
+                                     #print(dept_lst_me[j],sem_lst_me[j])
+                                    if assign_dept_code.get() == dept_lst_me[j] and semester_code.get() == sem_lst_me[j]:
+                                        code_lst_temp.remove(my_code_temp[j])                                            
                         code_lst = code_lst_temp
         case "Tutorial":
             df_curi_tut = df_curi_active[df_curi_active["T"] != 0]
@@ -414,8 +434,8 @@ def week_click(week_value:any):
                     cb5.config(state='normal')
                 if df_tt.at[r3.get(),"slot_6"] == "FREE":
                     cb6.config(state='normal')
-                if df_tt.at[r3.get(),"slot_x"] == "FREE":
-                    cb7.config(state='normal')
+                #if df_tt.at[r3.get(),"slot_x"] == "FREE":
+                #   cb7.config(state='normal')
             else:
                 print("NOT blank")
                 text_box2.delete('1.0','end')
@@ -443,8 +463,8 @@ def week_click(week_value:any):
                                 cb5.config(state='normal')
                             if df_tt.at[r3.get(),"slot_6"] == "FREE":
                                 cb6.config(state='normal')
-                            if df_tt.at[r3.get(),"slot_x"] == "FREE":
-                                cb6.config(state='normal')
+                            #if df_tt.at[r3.get(),"slot_x"] == "FREE":
+                            #    cb6.config(state='normal')
                         else:
                             text_box2.delete('1.0','end')
                             text_box2.insert('1.0',f"!! WARNING !! First complete the entry in LAB slots to get all slots for the LECTURE")
@@ -508,32 +528,66 @@ def update_tt():
             df_curi_lec = df_curi_active[df_curi_active["L"] != 0]
             lec_class_hr = df_curi_lec.L.tolist()[df_curi_lec.Code.tolist().index(sub_code.get())]
             df_sel_lec = df_sel[["nick_name","deptL_class","semL","L_code","L_class","L_hr"]].copy()
-            if faculty_name in df_sel_lec.nick_name.tolist():
-                df_sel_mylec = df_sel_lec[df_sel_lec["nick_name"]==faculty_name]
-                #print(df_sel_mylec)
-                mycode_lst = comn_lst(df_sel_mylec,"L_code","L_code","deptL_class","semL")
-                print(mycode_lst)
-                return
-                myhr_lst = comn_lst(df_sel_mylec,"L_code","L_hr","deptL_class","semL")
-                index_row = df_sel_lec[df_sel_lec['nick_name'] == faculty_name].index
-                if sub_code.get() in mycode_lst:
-                    myhr_lst[mycode_lst.index(sub_code.get())] = int(myhr_lst[mycode_lst.index(sub_code.get())]) + 1
-                    df_sel.loc[index_row,"L_hr"] = ",".join(str(x) for x in myhr_lst)
-                else:
-                    code_add_lst = comn_lst(df_sel_mylec,"L_code","L_code","deptL_class","semL")+[sub_code.get()]
-                    df_sel.loc[index_row,"L_code"] = ",".join(x for x in code_add_lst)
-                    dept_add_lst = comn_lst(df_sel_mylec,"L_code","deptL_class","deptL_class","semL")+[assign_dept_code.get()]
-                    df_sel.loc[index_row,"deptL_class"] = ",".join(x for x in dept_add_lst)
-                    sem_add_lst = comn_lst(df_sel_mylec,"L_code","semL","deptL_class","semL")+[semester_code.get()]
-                    df_sel.loc[index_row,"semL"] = ",".join(x for x in sem_add_lst)
-                    class_add_lst = comn_lst(df_sel_mylec,"L_code","L_class","deptL_class","semL")+[lec_class_hr]
-                    df_sel.loc[index_row,"L_class"] = ",".join(str(x) for x in class_add_lst)
-                    hr_add_lst = comn_lst(df_sel_mylec,"L_code","L_class","deptL_class","semL")+[1]
-                    df_sel.loc[index_row,"L_hr"] = ",".join(str(x) for x in hr_add_lst)                             
-            else:
+            print(df_sel_lec)
+            if df_sel_lec.empty:
+                code_lst = df_curi_lec.Code.tolist()
                 new_record = pd.DataFrame([{'nick_name':faculty_name,'emp_code':dept_emp_code.get(),'dept_origin':dept_code.get(),
-                    'deptL_class':assign_dept_code.get(),'semL':semester_code.get(),'L_code':sub_code.get(),'L_class':lec_class_hr,"L_hr":str(1)}])
-                df_sel = pd.concat([df_sel,new_record],ignore_index=True)   
+                    'deptL_class':assign_dept_code.get(),'semL':semester_code.get(),'L_code':sub_code.get(),'L_class':lec_class_hr,"L_hr":1}])
+                df_sel = pd.concat([df_sel,new_record],ignore_index=True)
+            else:         
+                #row_index = df_sel_lec.index[df_sel_lec['nick_name'] == faculty_name].tolist()[0]
+                #print(row_index)
+                if faculty_name in df_sel_lec.nick_name.tolist():
+                    row_index = df_sel_lec.index[df_sel_lec['nick_name'] == faculty_name].tolist()[0]
+                    print(row_index)
+                    df_sel_mylec = df_sel_lec[df_sel_lec["nick_name"]==faculty_name]
+                    print(df_sel_mylec)
+                    code_lst = df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_code"].split(",")
+                    if sub_code.get() in code_lst:
+                        if len(code_lst)==1:
+                            #code_lst_selected = code_lst[0]
+                            #class_lst_selected = df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_class"]               
+                            hr_lst = df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_hr"]
+                            hr_lst += 1
+                            df_sel.loc[row_index,"L_hr"] = hr_lst
+                            print(hr_lst)
+                        else:
+                            #class_lst = df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_class"].split(",")               
+                            hr_lst = df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_hr"].split(",")
+                            print(hr_lst)
+                            for j in range(len(code_lst)):
+                                if code_lst[j]==sub_code.get():
+                                    #code_lst_selected = code_lst[j]
+                                    #class_lst_selected = class_lst[j]
+                                    #hr_lst_selected = hr_lst[j]
+                                    hr_lst[j] = int(hr_lst[j]) + 1
+                                    print(hr_lst[j])
+                            df_sel.loc[row_index,"L_hr"] = ",".join(str(x) for x in hr_lst)
+                            print(df_sel.loc[row_index,"L_hr"])
+                            print(df_sel)
+                    else:
+                        if len(code_lst)==1:
+                            df_sel.loc[row_index,"L_class"] = f"{df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_class"]},{lec_class_hr}"
+                            df_sel.loc[row_index,"L_hr"] = f"{df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_hr"]},{1}"
+                        else:
+                            df_sel.loc[row_index,"L_class"] = f"{df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_class"]},{lec_class_hr}"
+                            df_sel.loc[row_index,"L_hr"] = f"{df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_hr"]},{1}"
+                        df_sel.loc[row_index,"L_code"] = f"{df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"L_code"]},{sub_code.get()}"
+                        df_sel.loc[row_index,"deptL_class"] = f"{df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"deptL_class"]},{assign_dept_code.get()}"
+                        df_sel.loc[row_index,"semL"] = f"{df_sel_mylec.at[df_sel_mylec.index.tolist()[0],"semL"]},{semester_code.get()}"
+                        #print(dept_lst,sem_lst,code_lst,class_lst,hr_lst)
+                    """
+                    df_sel.loc[row_index,"deptL_class"] = dept_lst.append(assign_dept_code.get())
+                    df_sel.loc[row_index,"semL"] = sem_lst.append(semester_code.get())
+                    df_sel.loc[row_index,"L_code"] = code_lst.append(sub_code.get())
+                    df_sel.loc[row_index,"L_class"] = class_lst
+                    df_sel.loc[row_index,"L_hr"] = hr_lst
+                    print(df_sel)
+                    """                                                
+                else:
+                    new_record = pd.DataFrame([{'nick_name':faculty_name,'emp_code':dept_emp_code.get(),'dept_origin':dept_code.get(),
+                        'deptL_class':assign_dept_code.get(),'semL':semester_code.get(),'L_code':sub_code.get(),'L_class':lec_class_hr,"L_hr":1}])
+                    df_sel = pd.concat([df_sel,new_record],ignore_index=True)   
             df_sel.to_excel(f"faculty_assignment_{odd_even_code.get()}.xlsx",dept_code.get(),index=False,engine="openpyxl")
             df_tt = pd.read_excel(f"timeTable_{assign_dept_code.get()}.xlsx",semester_code.get(),engine="openpyxl")
             df_tt.iloc[r3.get(),ro_co_lst.index(1)+1] = f"{faculty_name},{dept_code.get()},{sub_code.get()},(L)"
