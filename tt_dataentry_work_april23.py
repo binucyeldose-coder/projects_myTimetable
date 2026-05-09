@@ -34,6 +34,7 @@ def find_key(dictionary,value):
 def parent_dept_selection(event):
     global df_dept
     reset_lf1_lf2()
+    disable_lf4()
     dept_emp_code.set('')
     df_dept = create_excelsheet_orread(file_name='faculty_data.xlsx',sheet_name=dept_code.get())
     dept_emp_code.config(values=df_dept.emp_code.tolist())
@@ -63,7 +64,7 @@ def odd_even_selection(event):
     text_box1.insert('1.0',f"ENTER / REFRESH to select the assigned semester")
 def check_curi_filedata(file_name,sheet_name,ref_value):  #defined for use in semester option selection
     if os.path.exists(file_name):
-        print(file_name,ref_value)
+        #print(file_name,ref_value)
         sheet_names_list = pd.ExcelFile(file_name).sheet_names
         if sheet_name in sheet_names_list:
             df=pd.read_excel(file_name,sheet_name=sheet_name,engine="openpyxl")
@@ -78,7 +79,7 @@ def check_curi_filedata(file_name,sheet_name,ref_value):  #defined for use in se
         text_box1.delete('1.0','end')
         text_box1.insert('1.0',f"{file_name} not available in the system")
         text_box1.insert('2.0',f"Quit and create {file_name}")
-        print("file does not exist")
+        #print("file does not exist")
         return False
 def semester_option_selection(event):
     df_curi_lab = check_curi_filedata(f"curiculam_{assign_dept_code.get()}.xlsx",semester_code.get(),"P")
@@ -243,24 +244,24 @@ def ltp_option_selection(event):
                     codesin_lab_lst.extend(df_sel_lab.at[df_sel_lab.index.tolist()[j],"P_code"].split(","))
                     deptin_lst_lab.extend(df_sel_lab.at[df_sel_lab.index.tolist()[j],"deptP_class"].split(","))
                     semin_lst_lab.extend(df_sel_lab.at[df_sel_lab.index.tolist()[j],"semP"].split(","))
-                print(codesin_lab_lst,deptin_lst_lab,semin_lst_lab)
+                #print(codesin_lab_lst,deptin_lst_lab,semin_lst_lab)
                 codein_lab = []
                 for i in range(len(codesin_lab_lst)):
                     if codesin_lab_lst[i] in df_curi_lab.Code.tolist():
                         if assign_dept_code.get() == deptin_lst_lab[i] and semester_code.get() == semin_lst_lab[i]:
                             codein_lab.append(codesin_lab_lst[i])
-                print(codein_lab)
+                #print(codein_lab)
                 P_used = [0]*len(df_curi_lab.Code.tolist())
                 for i in range(len(df_curi_lab.Code.tolist())):
                     if df_curi_lab.Code.tolist()[i] in codein_lab:
                         P_used[i] += codein_lab.count(df_curi_lab.Code.tolist()[i])   
-                print(P_used,P_count,deptin_lst_lab,codein_lab,df_curi_lab.Code.tolist())
+                #print(P_used,P_count,deptin_lst_lab,codein_lab,df_curi_lab.Code.tolist())
                 code_lst_temp = df_curi_lab.Code.tolist()       
                 for j in range(len(P_count)):
                     if P_used[j] >= P_count[j]:
                         if df_curi_lab.Code.tolist()[j] in codein_lab:
                             code_lst_temp.remove(df_curi_lab.Code.tolist()[j])
-                print(code_lst_temp)
+                #print(code_lst_temp)
                 if df_sel_lab[df_sel_lab["nick_name"]==faculty_name].empty:
                     code_lst = code_lst_temp
                 else:
@@ -292,15 +293,17 @@ def action_option_selection(event):
     global data_tt,data_faculty
     global class_x,data,ro_co_dict,row_val
     action_entry=action_code.get()
+    normal_lf4()
     if action_entry == "CLEAR":
         lf1_lf2_clear()
         pass
     elif action_entry == "PROCEED":
         #TimeTable(root,f"timeTable_{assign_dept_code.get()}.xlsx",semester_code.get())
         week_click(None)
-        refresh_button.config(bg="Yellow",fg="Black")
+        refresh_button.config(text="SELECT weekday/slot",bg="yellow",fg="Black")
+        #refresh_button.config(bg="Yellow",fg="Black")
         text_box2.delete('1.0','end')
-        text_box2.insert('1.0',f"Select weekday and one from available slot before REFRESH")
+        text_box2.insert('1.0',f"Select weekday and one from available slot and REFRESH")
 def block_lecslots_withnickname():
     dept_lst = ["CE","ME","EE"]
     odd_even = odd_even_code.get()
@@ -395,7 +398,7 @@ def week_click(week_value:any):
             #if df_tt.at[r3.get(),"slot_x"] == "FREE":
             #   cb7.config(state='normal')
             else:
-                print("NOT blank")
+                #print("NOT blank")
                 text_box2.delete('1.0','end')
                 text_box2.insert('1.0',f"!! WARNING !! First complete the entry in LAB slots to get all slots for the LECTURE")
                 if df_tt.at[r3.get(),"slot_1"] == "FREE":
@@ -405,7 +408,7 @@ def week_click(week_value:any):
             block_lecslots_withnickname()                    
         case "Tutorial":
             reset_lf3()
-            print(len(df_tt.index),len(df_tt.columns))
+            #print(len(df_tt.index),len(df_tt.columns))
             codein_status = 0
             for rows in range(len(df_tt.index)):
                 for cols in range(1,len(df_tt.columns)-1):
@@ -443,7 +446,7 @@ def week_click(week_value:any):
         case "Practical":
             reset_lf3()
             nprows,npcols = np.where(df_tt == f"{sub_code.get()}(P)")
-            print(nprows,npcols,f"{sub_code.get()}(P)")
+            #print(nprows,npcols,f"{sub_code.get()}(P)")
             if nprows.size == 0:
                 if df_tt.at[r3.get(),"slot_3"] == "FREE":
                     cb3.config(state='normal')
@@ -457,14 +460,14 @@ def week_click(week_value:any):
                     case 5:
                         cb5.config(state='normal')                            
             block_labslots_withnickname()
-    verify_ok()
+    #verify_ok()
     verify_button.config(bg="white",fg="black")
 def refresh_weekslots():
     global ro_co_lst,df_tt
     ro_co_lst = [sr0.get(),sr1.get(),sr2.get(),sr3.get(),sr4.get(),sr5.get(),sr6.get()]
     if 1 not in ro_co_lst:
         text_box2.insert('1.0',f"!!WARNING!! Select weekday and one from available slot before REFRESH...................")
-        refresh_button.config(bg="Red",fg="White")
+        refresh_button.config(text="SLOT not selected",bg="Red",fg="White")
         return
     if sr2.get() == 1 and ltp_code.get() == "Practical":
         sr3.set(1)
@@ -473,17 +476,20 @@ def refresh_weekslots():
         sr3.set(0)
         sr5.set(1)
         sr6.set(1)
-    refresh_button.config(bg="yellow",fg="black")
-    verify_button.config(bg="Blue",fg="white")
+    #refresh_button.config(bg="yellow",fg="black")
+    verify_ok()
+    refresh_button.config(text="CHANGE weekday/slot",bg="yellow",fg="Black")
+    verify_button.config(bg="Green",fg="white")
     update_button.config(bg="white",fg="black")
     text_box2.delete('1.0','end')
     text_box2.insert('1.0',f"Confirm your choice {ltp_code.get()} : for the subject {sub_code.get()} for {semester_code.get()} in {assign_dept_code.get()} .... ")
 def verify_ok():
-    update_button.config(bg="Blue",fg="white")
+    update_button.config(bg="Green",fg="white")
     verify_button.config(bg="white",fg="black")
-    refresh_button.config(bg="white",fg="black")
+    #verify_button.config(bg="yellow",fg="black")
+    refresh_button.config(text="CHANGE weekday/slot",bg="yellow",fg="black")
     text_box2.delete('1.0','end')
-    text_box2.insert('1.0',f"Confirm and SAVE to Time Table")
+    text_box2.insert('1.0',f" ")
     cancel_button.config(text="CANCEL",bg="yellow",fg="black")
     disable_lf1_lf2()
 def update_tt():
@@ -492,7 +498,7 @@ def update_tt():
     activate_lf1_lf2()
     update_button.config(bg="white",fg="black")
     cancel_button.config(text="Confirm CANCEL",bg="white",fg="black")
-    print(df_sel)
+    #print(df_sel)
     match ltp_code.get():
         case "Lecture":
             df_curi_lec = df_curi_active[df_curi_active["L"] != 0]
@@ -602,6 +608,7 @@ def update_tt():
     activate_lf1_lf2()
     reset_lf1_lf2()
     reset_lf3()
+    disable_lf4()
 def clear_day_slot():
     text_box1.delete('1.0','end')
     text_box2.delete('1.0','end')
@@ -681,7 +688,17 @@ def normalset_lf3():
     sr3.set(0)
     sr4.set(0)
     sr5.set(0)
-    sr6.set(0) 
+    sr6.set(0)
+def disable_lf4():
+    verify_button.config(state="disabled",text=" ",bg="white",fg="black")
+    update_button.config(state="disabled",text=" ",bg="white",fg="black")
+    cancel_button.config(state="disabled",text=" ",bg="white",fg="black")
+    refresh_button.config(state="disabled",text=" ",bg="white",fg="black")
+def normal_lf4():
+    verify_button.config(state="normal",text="Verified OK")
+    update_button.config(state="normal",text="Update Time-Table")
+    cancel_button.config(state="normal",text="Confirm CANCEL")
+    refresh_button.config(state="normal",text=" ",bg="yellow",fg="black")
 def cancel_option_selection(event):
     lf1_lf2_clear()
     cancel_entry = cancel_code.get()
@@ -830,9 +847,9 @@ r3=IntVar()
 week_day=["Monday","Tuesday","Wednesday","Thursday","Friday"]
 for i in range(len(week_day)):
     week=(Radiobutton(lf3,text=week_day[i],variable=r3,value=i,command=lambda:week_click(r3.get())))
-    week.grid(row=0,column=i+1,padx=10,pady=2,sticky="nsew")
-refresh_button = Button(lf3,text="REFRESH",command=refresh_weekslots)
-refresh_button.grid(row=0,column=6,padx=2,pady=2,sticky="nsew")
+    week.grid(row=0,column=i,padx=10,pady=2,sticky="nsew")
+refresh_button = Button(lf3,text=" ",command=refresh_weekslots)
+refresh_button.grid(row=0,column=5,columnspan=2,padx=2,pady=2,sticky="nsew")
 #print(week.r3)
 show_msg=Label(lf3,text="-----------Slot 1 to Slot 6 for Lecture & Tutorial and Slot X optional-------------",fg="Blue")
 show_msg.grid(row=1, column=0, columnspan=7,padx=2,pady=2,sticky="nsew")
@@ -883,4 +900,4 @@ verify_button=Button(lf4,text="Verified OK",bg="white",command=verify_ok)
 verify_button.grid(row=2,column=2,padx=2,pady=2,sticky="nsew")
 update_button=Button(lf4,text="Update TimeTable",bg="white",command=update_tt)
 update_button.grid(row=2,column=3,padx=2,pady=2,sticky="nsew")
-root.mainloop()
+root.mainloop()    
